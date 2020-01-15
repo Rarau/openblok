@@ -27,15 +27,30 @@
 #include <algorithm>
 #include <chrono>
 #include <memory>
-#include <thread>
+//#include <thread>
+#include <psp2/kernel/threadmgr.h>
 #include <assert.h>
-
+#include <debugnet.h>
+#include <psp2/ctrl.h>
 
 const std::string LOG_MAIN = "main";
 const std::string LOG_HELP = "help";
 
+#define ip_server "192.168.1.60"
+#define port_server 18194
+
+int w = 920;
+int h = 544;
+SceCtrlData pad;
+
+
 int main(int argc, const char** argv)
 {
+    int ret;
+	ret = debugNetInit(ip_server,port_server,DEBUG);
+	debugNetPrintf(DEBUG,"OpenBlok debug level %d\n",ret);
+
+    printf("OpenBlok, created by Mátyás Mustoha, ");
     Log::info(LOG_MAIN) << "OpenBlok, created by Mátyás Mustoha, " << game_version << "\n";
 
     for (int arg_i = 1; arg_i < argc; arg_i++) {
@@ -62,6 +77,7 @@ int main(int argc, const char** argv)
         }
     }
 
+    Paths::changeDataDir("app0:/data");
 
     AppContext app;
     if (!app.init())
@@ -78,7 +94,7 @@ int main(int argc, const char** argv)
     auto frame_starttime = std::chrono::steady_clock::now();
     auto frame_planned_endtime = frame_starttime + Timing::frame_duration;
     auto gametime_delay = Timing::frame_duration; // start with an update
-
+    app.gcx().modifyDrawScale(0.78);
     while (!app.window().quitRequested()) {
         try {
             while (gametime_delay >= Timing::frame_duration && !app.states().empty()) {
@@ -88,9 +104,37 @@ int main(int argc, const char** argv)
             }
             if (app.states().empty())
                 break;
+            
 
             app.states().top()->draw(app.gcx());
+
+            // sceCtrlPeekBufferPositive(0, &pad, 1);
+
+            // if(pad.buttons & SCE_CTRL_UP)
+            // {
+            //     debugNetPrintf(DEBUG,"SCE_CTRL_UP\n");
+            //     h++;
+            // }
+            // if(pad.buttons & SCE_CTRL_DOWN)
+            // {
+            //     debugNetPrintf(DEBUG,"SCE_CTRL_DOWN\n");
+            //     h--;
+            // }
+            // if(pad.buttons & SCE_CTRL_RIGHT)
+            // {
+            //     debugNetPrintf(DEBUG,"SCE_CTRL_RIGHT\n");
+            //     w++;
+            // }
+            // if(pad.buttons & SCE_CTRL_LEFT)
+            // {
+            //     debugNetPrintf(DEBUG,"SCE_CTRL_LEFT\n");
+            //     w--;
+            // }
+            // app.gcx().onResize(w, h);
+
             app.gcx().render();
+
+
         }
         catch (const std::exception& err) {
             app.window().showErrorMessage(err.what());
@@ -101,8 +145,8 @@ int main(int argc, const char** argv)
         gametime_delay += Timing::frame_duration + lag;
 
         // max frame rate limiting
-        std::this_thread::sleep_until(frame_planned_endtime);
-
+        //std::this_thread::sleep_until(frame_planned_endtime);
+	    sceKernelDelayThread(16666);
         frame_starttime = std::chrono::steady_clock::now();
         frame_planned_endtime = frame_starttime + Timing::frame_duration;
     }

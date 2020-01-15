@@ -4,6 +4,7 @@
 #include "SDLGraphicsContext.h"
 #include "system/Log.h"
 #include "system/Paths.h"
+#include "../vita/VitaGraphicsContext.h"
 
 #include <assert.h>
 
@@ -16,7 +17,8 @@ SDLWindow::SDLWindow()
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         960, 540,
         SDL_WINDOW_RESIZABLE)
-    , gcx(window)
+    //, gcx(window)
+    , gcx()
     , default_keyboard_mapping({
             {SDL_SCANCODE_P, {InputType::GAME_PAUSE}},
             {SDL_SCANCODE_C, {InputType::GAME_HOLD}},
@@ -51,10 +53,10 @@ SDLWindow::SDLWindow()
     // them in the same map using 2 bytes, buttons in the upper byte
     // with 0xFF below, and hats in the lower byte.
     , default_joystick_mapping({
-            {SDL_HAT_UP, {InputType::GAME_HARDDROP, InputType::MENU_UP}},
-            {SDL_HAT_DOWN, {InputType::GAME_SOFTDROP, InputType::MENU_DOWN}},
-            {SDL_HAT_LEFT, {InputType::GAME_MOVE_LEFT, InputType::MENU_LEFT}},
-            {SDL_HAT_RIGHT, {InputType::GAME_MOVE_RIGHT, InputType::MENU_RIGHT}},
+            {SDL_HAT_UP, {InputType::MENU_UP}},
+            {SDL_HAT_DOWN, {InputType::MENU_DOWN}},
+            {SDL_HAT_LEFT, {InputType::MENU_LEFT}},
+            {SDL_HAT_RIGHT, {InputType::MENU_RIGHT}},
             {0 + 0xFF, {InputType::GAME_ROTATE_LEFT}},
             {(1 << 8) + 0xFF, {InputType::GAME_ROTATE_LEFT, InputType::MENU_OK}},
             {(2 << 8) + 0xFF, {InputType::GAME_ROTATE_RIGHT, InputType::MENU_CANCEL}},
@@ -85,7 +87,7 @@ void SDLWindow::toggleFullscreen()
 
 void SDLWindow::requestScreenshot(const std::string& path)
 {
-    gcx.requestScreenshot(window, path);
+    //gcx.requestScreenshot(window, path);
 }
 
 void SDLWindow::setInputConfig(const std::map<DeviceName, DeviceData>& known)
@@ -190,11 +192,12 @@ std::vector<Event> SDLWindow::collectEvents()
                     break;
             }
             break;
-        case SDL_CONTROLLERDEVICEADDED:
-            // Note: It seems this event doesn't always trigger,
-            // so the code was moved to SDL_JOYDEVICEADDED, which happens
-            // for both GameControllers and Joysticks.
-            break;
+        // case SDL_CONTROLLERDEVICEADDED:
+        //     printf("SDL_CONTROLLERDEVICEADDED");
+        //     // Note: It seems this event doesn't always trigger,
+        //     // so the code was moved to SDL_JOYDEVICEADDED, which happens
+        //     // for both GameControllers and Joysticks.
+        //     break;
         case SDL_CONTROLLERDEVICEREMOVED:
             if (gamepads.count(sdl_event.cdevice.which)) {
                 Log::info(LOG_INPUT_TAG) << "Gamepad disconnected: "
@@ -251,7 +254,8 @@ std::vector<Event> SDLWindow::collectEvents()
                 SDL_PushEvent(&new_sdl_event);
             }
             break;
-        case SDL_JOYDEVICEADDED:
+        case SDL_CONTROLLERDEVICEADDED:
+        //case SDL_JOYDEVICEADDED:
             if (SDL_IsGameController(sdl_event.jdevice.which)) {
                 auto gamepad = std::unique_ptr<SDL_GameController, std::function<void(SDL_GameController*)>>(
                     SDL_GameControllerOpen(sdl_event.jdevice.which),
@@ -333,33 +337,33 @@ std::vector<Event> SDLWindow::collectEvents()
             }
             break;
         case SDL_JOYAXISMOTION:
-            if (joysticks.count(sdl_event.jhat.which)) {
-                SDL_Event new_sdl_event;
-                new_sdl_event.type = SDL_JOYHATMOTION;
-                new_sdl_event.jhat.timestamp = sdl_event.jaxis.timestamp;
-                new_sdl_event.jhat.which = sdl_event.jaxis.which;
-                new_sdl_event.jhat.hat = 0;
+            // if (joysticks.count(sdl_event.jhat.which)) {
+            //     SDL_Event new_sdl_event;
+            //     new_sdl_event.type = SDL_JOYHATMOTION;
+            //     new_sdl_event.jhat.timestamp = sdl_event.jaxis.timestamp;
+            //     new_sdl_event.jhat.which = sdl_event.jaxis.which;
+            //     new_sdl_event.jhat.hat = 0;
 
-                if (sdl_event.jaxis.value == AXIS_MAX || sdl_event.jaxis.value == AXIS_MIN) { // stick pushed
-                    // assume 0, 2, 4, ... axis to be horizontal
-                    // and 1, 3, 5, ... axis to be vertical
-                    if (sdl_event.jaxis.axis % 2 == 0) {
-                        new_sdl_event.jhat.value = (sdl_event.jaxis.value < 0)
-                            ? SDL_HAT_LEFT
-                            : SDL_HAT_RIGHT;
-                    }
-                    else {
-                        new_sdl_event.jhat.value = (sdl_event.jaxis.value < 0)
-                            ? SDL_HAT_UP
-                            : SDL_HAT_DOWN;
-                    }
-                }
-                else { // stick released
-                    new_sdl_event.jhat.value = SDL_HAT_CENTERED;
-                }
+            //     if (sdl_event.jaxis.value == AXIS_MAX || sdl_event.jaxis.value == AXIS_MIN) { // stick pushed
+            //         // assume 0, 2, 4, ... axis to be horizontal
+            //         // and 1, 3, 5, ... axis to be vertical
+            //         if (sdl_event.jaxis.axis % 2 == 0) {
+            //             new_sdl_event.jhat.value = (sdl_event.jaxis.value < 0)
+            //                 ? SDL_HAT_LEFT
+            //                 : SDL_HAT_RIGHT;
+            //         }
+            //         else {
+            //             new_sdl_event.jhat.value = (sdl_event.jaxis.value < 0)
+            //                 ? SDL_HAT_UP
+            //                 : SDL_HAT_DOWN;
+            //         }
+            //     }
+            //     else { // stick released
+            //         new_sdl_event.jhat.value = SDL_HAT_CENTERED;
+            //     }
 
-                SDL_PushEvent(&new_sdl_event);
-            }
+            //     SDL_PushEvent(&new_sdl_event);
+            // }
             break;
         case SDL_JOYBUTTONUP:
         case SDL_JOYBUTTONDOWN:

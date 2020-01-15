@@ -4,7 +4,7 @@
 
 
 #ifndef OPENBLOK_DATADIR
-#define OPENBLOK_DATADIR "./data"
+#define OPENBLOK_DATADIR "app0:/data"
 #endif
 
 std::string defaultDataDir()
@@ -12,7 +12,7 @@ std::string defaultDataDir()
     std::string path(OPENBLOK_DATADIR);
     if (path.front() == '.') {
         const auto basepath_raw = SDL_GetBasePath();
-        path.insert(0, basepath_raw);
+        //path.insert(0, basepath_raw);
         SDL_free(basepath_raw);
     }
     return path + '/';
@@ -21,9 +21,10 @@ std::string defaultDataDir()
 std::string defaultConfigDir()
 {
     const auto path_raw = SDL_GetPrefPath(".", "openblok");
-    const std::string path(path_raw);
-    SDL_free(path_raw);
-    return path;
+    // const std::string path(path_raw);
+    // //SDL_free(path_raw);
+    // return path;
+    return "";
 }
 
 std::string Paths::datadir_path = defaultDataDir();

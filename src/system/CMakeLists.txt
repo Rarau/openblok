@@ -16,6 +16,13 @@ set(MOD_SYSTEM_SRC
     sdl/SDLSoundEffect.cpp
     sdl/SDLTexture.cpp
     sdl/SDLWindow.cpp
+
+    # Vita
+    vita/VitaFont.cpp
+    vita/VitaGraphicsContext.cpp
+    vita/VitaTexture.cpp
+    vita/VitaTextureText.cpp
+    vita/VitaWindow.cpp
 )
 
 set(MOD_SYSTEM_H
@@ -45,6 +52,13 @@ set(MOD_SYSTEM_H
     sdl/SDLTexture.h
     sdl/SDLWindow.h
 
+    # Vita
+    vita/VitaFont.h
+    vita/VitaGraphicsContext.h
+    vita/VitaTexture.h
+    vita/VitaTextureText.h
+    vita/VitaWindow.h
+
     # Util
     util/MakeUnique.h
     util/Regex.h
@@ -56,7 +70,30 @@ add_library(module_system ${MOD_SYSTEM_SRC} ${MOD_SYSTEM_H})
 target_include_directories(module_system PRIVATE ${SDL2PP_INCLUDE_DIRS})
 target_compile_definitions(module_system PRIVATE OPENBLOK_DATADIR="${DATADIR}")
 target_link_libraries(module_system ${SDL2PP_LIBRARIES})
-
+target_link_libraries(module_system
+    SceAudio_stub
+    SceCtrl_stub
+    vita2d
+    SceHid_stub
+    SceTouch_stub
+    jpeg
+    png
+    SceGxm_stub
+    FLAC
+    ogg
+    freetype
+    SDL2
+    mpg123
+    vorbisfile
+    vorbis
+    z
+    ogg
+    SceDisplay_stub
+    SceSysmodule_stub
+    SceCommonDialog_stub
+    crypto
+    mikmod
+)
 # use Boost.Regex if requested
 if (USE_BOOST_REGEX)
     target_include_directories(module_system PRIVATE ${Boost_INCLUDE_DIRS})

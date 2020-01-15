@@ -26,6 +26,7 @@ public:
 
     virtual unsigned short screenWidth() const = 0;
     virtual unsigned short screenHeight() const = 0;
+    virtual void onResize(int width, int height) = 0;
 
     virtual float getDrawScale() const = 0;
     virtual void modifyDrawScale(float scale) = 0;

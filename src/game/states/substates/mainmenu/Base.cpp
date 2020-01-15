@@ -19,6 +19,7 @@
 #include "system/Texture.h"
 #include "system/util/MakeUnique.h"
 
+#include <debugnet.h>
 
 namespace SubStates {
 namespace MainMenu {
@@ -29,6 +30,8 @@ Base::Base(MainMenuState& parent, AppContext& app)
                         [](double t){ return t; },
                         [this](){  })
 {
+    debugNetPrintf(DEBUG, " Base::Base\n");
+
     PieceFactory::changeInitialPositions(Rotations::SRS().initialPositions());
     column_slide_anim.stop();
 

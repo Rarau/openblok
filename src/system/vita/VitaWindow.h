@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SDLAudioContext.h"
+#include "../sdl/SDLAudioContext.h"
 //#include "SDLGraphicsContext.h"
 #include "../vita/VitaGraphicsContext.h"
 #include "system/Window.h"
@@ -11,11 +11,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <psp2/ctrl.h>
 
 
-class SDLWindow : public Window {
+class VitaWindow : public Window {
 public:
-    SDLWindow();
+    VitaWindow();
 
     void toggleFullscreen() final;
     void requestScreenshot(const std::string&) final;
@@ -23,7 +24,7 @@ public:
     AudioContext& audioContext() final { return audio; };
 
     std::vector<Event> collectEvents() final;
-    bool quitRequested() final { return m_quit_requested; }
+    bool quitRequested() final { return false; }
 
     void setInputConfig(const std::map<DeviceName, DeviceData>&) final;
     void setKeyBinding(DeviceID, InputType, uint16_t) final;
@@ -34,23 +35,16 @@ public:
     static void showErrorMessage(const std::string& title, const std::string& content);
 
 private:
-    SDL2pp::SDL sdl;
-    SDL2pp::Window window;
     VitaGraphicsContext gcx;
-    //SDLGraphicsContext gcx;
     SDLAudioContext audio;
-    std::unordered_map<SDL_JoystickID,
-        std::unique_ptr<SDL_Joystick, std::function<void(SDL_Joystick*)>>> joysticks;
-    std::unordered_map<SDL_JoystickID,
-        std::unique_ptr<SDL_GameController, std::function<void(SDL_GameController*)>>> gamepads;
 
-    std::map<DeviceName, DeviceData> known_mappings; ///< all known device mappings, but without IDs
-    ButtonToEventsMap knownButtonmapForDeviceName(const std::string&);
-
-    DeviceMap device_maps; ///< the input maps of all connected devices
-    const ButtonToEventsMap default_keyboard_mapping;
+    DeviceID deviceId;
+    DeviceData device;
+    DeviceMap device_map;
+    
     const ButtonToEventsMap default_gamepad_mapping;
-    const ButtonToEventsMap default_joystick_mapping;
+    std::map<uint16_t, bool> prevState;
 
-    bool m_quit_requested;
+    SceCtrlData pad;
+    SceCtrlData prevPad;
 };

@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <assert.h>
 
+#include <debugnet.h>
 
 namespace SubStates {
 namespace MainMenu {
@@ -29,9 +30,11 @@ Options::Options(MainMenuState& parent, AppContext& app)
     : current_category_idx(0)
     , current_setting_idx(0)
     , current_subitem(nullptr)
-    , current_device_id(-1) // keyboard
+    , current_device_id(0) // keyboard
     , current_input_handler(nullptr)
 {
+    debugNetPrintf(DEBUG,"Options::Options initializing options menu...\n");
+
     category_buttons.emplace_back(app, tr("GENERAL"));
     category_buttons.emplace_back(app, tr("FINE TUNING"));
     category_buttons.emplace_back(app, tr("INPUT (MENU)"));
@@ -46,6 +49,7 @@ Options::Options(MainMenuState& parent, AppContext& app)
      * it's just that they need a lot of ctor parameters,
      * like long strings, arrays and lambda callbacks */
 
+    debugNetPrintf(DEBUG,"Initializing system_options\n");
     std::vector<std::shared_ptr<Layout::Options::OptionsItem>> system_options;
     {
         system_options.emplace_back(std::make_shared<ToggleButton>(
@@ -87,6 +91,7 @@ Options::Options(MainMenuState& parent, AppContext& app)
     }
     subitem_panels.push_back(std::move(system_options));
 
+    debugNetPrintf(DEBUG,"Initializing tuning_options\n");
     std::vector<std::shared_ptr<Layout::Options::OptionsItem>> tuning_options;
     {
         tuning_options.emplace_back(std::make_shared<ValueChooser>(app,
@@ -190,6 +195,7 @@ Options::Options(MainMenuState& parent, AppContext& app)
     }
     subitem_panels.push_back(std::move(tuning_options));
 
+    debugNetPrintf(DEBUG,"Initializing menu_input_options and game_input_options\n");
     std::vector<std::shared_ptr<Layout::Options::OptionsItem>> menu_input_options;
     std::vector<std::shared_ptr<Layout::Options::OptionsItem>> game_input_options;
     {
@@ -215,8 +221,11 @@ Options::Options(MainMenuState& parent, AppContext& app)
         menu_input_options.back()->setMarginBottom(30);
         game_input_options.emplace_back(menu_input_options.front());
 
+        debugNetPrintf(DEBUG,"game_input_options connectedDevices\n");
         const auto& devices = app.window().connectedDevices();
         for (const auto& device : devices) {
+            debugNetPrintf(DEBUG,"for loop connectedDevices\n");
+
             static const std::vector<std::pair<std::string, InputType>> menu_eventnames = {
                 {tr("Up"), InputType::MENU_UP},
                 {tr("Down"), InputType::MENU_DOWN},
@@ -239,20 +248,30 @@ Options::Options(MainMenuState& parent, AppContext& app)
             auto& panel = input_device_panels[device.second.id];
             panel.menu = createInputFieldsForEvents(app, device.second, menu_eventnames);
             panel.game = createInputFieldsForEvents(app, device.second, game_eventnames);
+            
+            debugNetPrintf(DEBUG,"for loop connectedDevices end iteration\n");
         }
 
         //for (const auto& item : input_device_panels.at(current_device_id))
         //    input_options.push_back(item);
+        debugNetPrintf(DEBUG,"default_panel\n");
         auto& default_panel = input_device_panels.at(current_device_id);
+        debugNetPrintf(DEBUG,"menu_input_options.insert\n");
         menu_input_options.insert(menu_input_options.end(), default_panel.menu.begin(), default_panel.menu.end());
+        debugNetPrintf(DEBUG,"game_input_options.insert\n");
         game_input_options.insert(game_input_options.end(), default_panel.game.begin(), default_panel.game.end());
     }
+
+    debugNetPrintf(DEBUG, "subitem_panels.push_back(std::move(menu_input_options))\n");
     subitem_panels.push_back(std::move(menu_input_options));
+    debugNetPrintf(DEBUG, "subitem_panels.push_back(std::move(game_input_options))\n");
     subitem_panels.push_back(std::move(game_input_options));
 
+    debugNetPrintf(DEBUG,"calling updatePositions\n");
 
     updatePositions(app.gcx());
 
+    debugNetPrintf(DEBUG,"Initializing fn_category_input\n");
     fn_category_input = [this, &parent, &app](InputType input){
         assert(!current_subitem);
         switch (input) {
@@ -281,6 +300,9 @@ Options::Options(MainMenuState& parent, AppContext& app)
                 break;
         }
     };
+
+    debugNetPrintf(DEBUG,"Initializing fn_settings_input\n");
+
     fn_settings_input = [this, &app](InputType input){
         assert(current_subitem);
         if (current_subitem->isLocked()) {
@@ -315,6 +337,8 @@ Options::Options(MainMenuState& parent, AppContext& app)
         }
     };
     current_input_handler = &fn_category_input;
+
+    debugNetPrintf(DEBUG,"Options menu initialized\n");
 }
 
 Options::~Options() = default;
@@ -368,6 +392,8 @@ void Options::findThemeDirs(const std::string& base_path, std::vector<std::strin
 
 void Options::updatePositions(GraphicsContext& gcx)
 {
+    debugNetPrintf(DEBUG,"Options::updatePositions\n");
+    
     const int width = gcx.screenWidth() * 0.90;
     const int height = 600; // TODO: fix magic numbers
     container_rect = {

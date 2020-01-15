@@ -470,12 +470,13 @@ void Well::notify(const WellEvent& event)
 
 std::string Well::asAscii() const
 {
-    return ascii.asAscii(*this);
+    //return ascii.asAscii(*this);
+    return "";
 }
 
 void Well::fromAscii(const std::string& text)
 {
-    ascii.fromAscii(*this, text);
+    //ascii.fromAscii(*this, text);
 }
 
 #endif
