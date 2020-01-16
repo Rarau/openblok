@@ -21,8 +21,7 @@ target_link_libraries(openblok_test UnitTest++)
 target_link_libraries(openblok_test module_system)
 target_link_libraries(openblok_test module_game)
 
-
-# use custom std::make_unique if necessary
-if (NOT CXX_HAS_MAKEUNIQUE)
-    target_compile_definitions(openblok_test PRIVATE NEED_MAKEUNIQUE)
-endif()
+include(EnableWarnings)
+include(RequireCxx11)
+enable_warnings(openblok_test)
+require_cxx11_or_higher(openblok_test)

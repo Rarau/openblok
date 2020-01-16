@@ -1,8 +1,8 @@
 #pragma once
 
-
-#ifdef NEED_MAKEUNIQUE
-
+// __cpp_lib_make_unique is not set in MSVC and old Clang
+// __cplusplus is incorrect in MSVC
+#if !defined(_MSC_VER) && __cplusplus < 201402L
 namespace std {
 
 template<typename T, typename... Args>
@@ -20,5 +20,4 @@ make_unique(std::size_t size)
 }
 
 } // namespace std
-
-#endif
+#endif // __cpp_lib_make_unique

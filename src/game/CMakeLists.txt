@@ -1,3 +1,5 @@
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+
 set(MOD_GAME_SRC
     AppContext.cpp
     BattleAttackTable.cpp
@@ -54,6 +56,7 @@ set(MOD_GAME_SRC
     states/substates/ingame/Pause.cpp
     states/substates/ingame/PlayerSelect.cpp
     states/substates/ingame/Statistics.cpp
+    states/substates/ingame/TeamSelect.cpp
     states/substates/mainmenu/Base.cpp
     states/substates/mainmenu/Options.cpp
 
@@ -131,6 +134,7 @@ set(MOD_GAME_H
     states/substates/ingame/Pause.h
     states/substates/ingame/PlayerSelect.h
     states/substates/ingame/Statistics.h
+    states/substates/ingame/TeamSelect.h
     states/substates/mainmenu/Base.h
     states/substates/mainmenu/Options.h
 
@@ -139,6 +143,8 @@ set(MOD_GAME_H
     util/Matrix.h
 )
 
+
+
 if(CMAKE_BUILD_TYPE STREQUAL "debug")
     list(APPEND MOD_GAME_SRC components/well/Ascii.cpp)
     list(APPEND MOD_GAME_H components/well/Ascii.h)
@@ -146,15 +152,9 @@ endif()
 
 add_library(module_game ${MOD_GAME_SRC} ${MOD_GAME_H})
 target_link_libraries(module_game module_system)
+target_link_libraries(module_game tinydir)
 
-# use Boost.Regex if requested
-if (USE_BOOST_REGEX)
-    target_include_directories(module_game PRIVATE ${Boost_INCLUDE_DIRS})
-    target_compile_definitions(module_game PRIVATE USE_BOOST_REGEX)
-    target_link_libraries(module_game ${Boost_LIBRARIES})
-endif()
-
-# use custom std::make_unique if necessary
-if (NOT CXX_HAS_MAKEUNIQUE)
-    target_compile_definitions(module_game PRIVATE NEED_MAKEUNIQUE)
-endif()
+include("../../cmake/EnableWarnings.cmake")
+include("../../cmake/RequireCxx11.cmake")
+enable_warnings(module_game)
+require_cxx11_or_higher(module_game)

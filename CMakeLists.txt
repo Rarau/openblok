@@ -50,6 +50,7 @@ add_subdirectory(external/libSDL2pp)
 
 # Dependencies: tinydir
 include_directories(external/tinydir)
+add_subdirectory(thirdparty)
 
 # The main game source
 include_directories(src)

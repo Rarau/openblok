@@ -1,0 +1,8 @@
+[submodule "thirdparty/libSDL2pp"]
+	path = thirdparty/libSDL2pp
+	url = https://github.com/mmatyas/libSDL2pp.git
+	branch = cmake_modernization
+[submodule "thirdparty/unittest-cpp"]
+	path = thirdparty/unittest-cpp
+	url = https://github.com/mmatyas/unittest-cpp.git
+	branch = cmake_modernize
