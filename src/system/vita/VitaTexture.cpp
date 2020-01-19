@@ -39,8 +39,9 @@ void VitaTexture::drawScaled(const Rectangle& rect)
     }
     //printf("VitaTexture::drawScaled\n");
     ctx->initFrameIfRequired();
-    float xScale = rect.w / width();
-    float yScale = rect.h / height();
+    float xScale = rect.w / (float)width();
+    float yScale = rect.h / (float)height();
+
     vita2d_draw_texture_tint_scale(tex, rect.x * ctx->scale, rect.y * ctx->scale, xScale * ctx->scale, yScale * ctx->scale, GetColor());
     //vita2d_draw_texture_tint_scale(tex, rect.x, rect.y, xScale * ctx->scale, yScale * ctx->scale, GetColor());
 }
